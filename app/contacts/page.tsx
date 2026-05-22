@@ -1,4 +1,5 @@
 import BookingForm from '../../components/BookingForm'
+import BookingCalendar from '../../components/BookingCalendar'
 
 export default function ContactsPage() {
   return (
@@ -52,7 +53,7 @@ export default function ContactsPage() {
           </div>
 
         </div>
-
+        <BookingCalendar />
         <BookingForm />
 
       </section>
