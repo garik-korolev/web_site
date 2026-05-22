@@ -13,9 +13,18 @@ export default function ContactsPage() {
         <div className="contact-list">
 
           <div className="card">
-            <h3>Telegram</h3>
-            <p>@Galina_Koroleva</p>
-          </div>
+  <h3>Telegram</h3>
+
+  <p>
+    <a
+      href="https://t.me/Galina_Koroleva"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      @Galina_Koroleva
+    </a>
+  </p>
+</div>
 
           <div className="card">
             <h3>Email</h3>
