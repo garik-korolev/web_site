@@ -1,43 +1,10 @@
 'use client'
-
-import { useEffect, useState } from 'react'
-import { DayPicker } from 'react-day-picker'
-import 'react-day-picker/dist/style.css'
-
-export default function BookingCalendar() {
-  const [selectedDate, setSelectedDate] = useState<Date>()
-  const [slots, setSlots] = useState<any[]>([])
-
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [telegram, setTelegram] = useState('')
-
-  useEffect(() => {
-    if (!selectedDate) return
-
-    const formatted = selectedDate
-      .toISOString()
-      .split('T')[0]
-
-    fetch(`/api/availability?date=${formatted}`)
-      .then((res) => res.json())
-      .then(setSlots)
-  }, [selectedDate])
-
-  async function book(hour: number) {
-    if (!selectedDate) return
-
-    await fetch('/api/book', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({
         name,
         phone,
         telegram,
         date: selectedDate,
-        hour,
+        hour: selectedHour,
       }),
     })
 
@@ -45,35 +12,44 @@ export default function BookingCalendar() {
   }
 
   return (
-    <div className="booking-wrapper">
+    <div className="booking-layout">
 
-      <DayPicker
-        mode="single"
-        selected={selectedDate}
-        onSelect={setSelectedDate}
-      />
+      <div className="calendar-card">
+        <h2>Выберите дату</h2>
 
-      {selectedDate && (
-        <div className="slots">
+        <DayPicker
+          mode="single"
+          selected={selectedDate}
+          onSelect={setSelectedDate}
+        />
+      </div>
 
-          <h3>Свободное время</h3>
+      <div className="booking-panel">
 
-          <div className="slots-grid">
-            {slots.map((slot) => (
-              <button
-                key={slot.hour}
-                disabled={!slot.available}
-                className={
-                  slot.available
-                    ? 'slot available'
-                    : 'slot busy'
-                }
-                onClick={() => book(slot.hour)}
-              >
-                {slot.hour}:00
-              </button>
-            ))}
-          </div>
+        <h2>Свободное время</h2>
+
+        <div className="slots-grid">
+          {slots.map((slot) => (
+            <button
+              key={slot.hour}
+              disabled={!slot.available}
+              className={`slot-btn ${
+                slot.available
+                  ? 'available'
+                  : 'busy'
+              } ${
+                selectedHour === slot.hour
+                  ? 'selected-slot'
+                  : ''
+              }`}
+              onClick={() => setSelectedHour(slot.hour)}
+            >
+              {slot.hour}:00
+            </button>
+          ))}
+        </div>
+
+        <div className="booking-form">
 
           <input
             placeholder="Ваше имя"
@@ -93,8 +69,17 @@ export default function BookingCalendar() {
             onChange={(e) => setTelegram(e.target.value)}
           />
 
+          <button
+            className="booking-submit"
+            onClick={handleBooking}
+          >
+            Записаться
+          </button>
+
         </div>
-      )}
+
+      </div>
+
     </div>
   )
 }
