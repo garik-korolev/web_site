@@ -28,12 +28,20 @@ export default function ContactsPage() {
 
           <div className="card">
             <h3>Email</h3>
-            <p>nexy@bk.ru</p>
+            <p>
+  <a href="mailto:nexy@bk.ru">
+    nexy@bk.ru
+  </a>
+</p>
           </div>
 
           <div className="card">
             <h3>Телефон</h3>
-            <p>+7 (999) 223-25-01</p>
+            <p>
+  <a href="tel:+79992232501">
+    +7 (999) 223-25-01
+  </a>
+</p>
           </div>
 
           <div className="card">
