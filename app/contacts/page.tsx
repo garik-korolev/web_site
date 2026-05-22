@@ -1,3 +1,4 @@
+import BookingForm from '../../components/BookingForm'
 export default function ContactsPage() {
   return (
     <main className="container">
