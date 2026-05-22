@@ -1,12 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
 
 export default function BookingCalendar() {
-  const [selectedDate, setSelectedDate] = useState<Date>()
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  )
+
   const [slots, setSlots] = useState<any[]>([])
+  const [selectedHour, setSelectedHour] = useState<number | null>(null)
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -21,11 +25,18 @@ export default function BookingCalendar() {
 
     fetch(`/api/availability?date=${formatted}`)
       .then((res) => res.json())
-      .then(setSlots)
+      .then((data) => setSlots(data))
   }, [selectedDate])
 
-  async function book(hour: number) {
-    if (!selectedDate) return
+  const availableSlots = useMemo(() => {
+    return slots.filter((slot) => slot.available)
+  }, [slots])
+
+  async function handleBooking() {
+    if (!selectedDate || selectedHour === null) {
+      alert('Выберите дату и время')
+      return
+    }
 
     await fetch('/api/book', {
       method: 'POST',
@@ -37,64 +48,120 @@ export default function BookingCalendar() {
         phone,
         telegram,
         date: selectedDate,
-        hour,
+        hour: selectedHour,
       }),
     })
 
     alert('Запись успешно создана')
+
+    setName('')
+    setPhone('')
+    setTelegram('')
+    setSelectedHour(null)
   }
 
   return (
-    <div className="booking-wrapper">
+    <section className="booking-wrapper">
 
-      <DayPicker
-        mode="single"
-        selected={selectedDate}
-        onSelect={setSelectedDate}
-      />
+      <div className="booking-card">
 
-      {selectedDate && (
-        <div className="slots">
+        <div className="calendar-side">
 
-          <h3>Свободное время</h3>
+          <div className="calendar-header">
+            <span className="calendar-badge">
+              Онлайн-запись
+            </span>
 
-          <div className="slots-grid">
-            {slots.map((slot) => (
-              <button
-                key={slot.hour}
-                disabled={!slot.available}
-                className={
-                  slot.available
-                    ? 'slot available'
-                    : 'slot busy'
-                }
-                onClick={() => book(slot.hour)}
-              >
-                {slot.hour}:00
-              </button>
-            ))}
+            <h2>
+              Выберите удобную дату
+            </h2>
+
+            <p>
+              После выбора даты будут показаны
+              свободные часы для консультации.
+            </p>
           </div>
 
-          <input
-            placeholder="Ваше имя"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <input
-            placeholder="Телефон"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-
-          <input
-            placeholder="Telegram"
-            value={telegram}
-            onChange={(e) => setTelegram(e.target.value)}
-          />
+          <div className="calendar-container">
+            <DayPicker
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+            />
+          </div>
 
         </div>
-      )}
-    </div>
+
+        <div className="booking-side">
+
+          <div className="slots-header">
+            <h3>Свободное время</h3>
+
+            <p>
+              Доступные слоты на выбранную дату
+            </p>
+          </div>
+
+          <div className="slots-container">
+
+            {availableSlots.length > 0 ? (
+              availableSlots.map((slot: any) => (
+                <button
+                  key={slot.hour}
+                  onClick={() => setSelectedHour(slot.hour)}
+                  className={`time-slot ${
+                    selectedHour === slot.hour
+                      ? 'selected-time'
+                      : ''
+                  }`}
+                >
+                  {slot.hour}:00
+                </button>
+              ))
+            ) : (
+              <div className="empty-slots">
+                На выбранную дату свободных мест нет
+              </div>
+            )}
+
+          </div>
+
+          <div className="booking-form">
+
+            <input
+              type="text"
+              placeholder="Ваше имя"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+
+            <input
+              type="text"
+              placeholder="Телефон"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+
+            <input
+              type="text"
+              placeholder="Telegram"
+              value={telegram}
+              onChange={(e) => setTelegram(e.target.value)}
+            />
+
+            <button
+              className="booking-button"
+              onClick={handleBooking}
+            >
+              Записаться на консультацию
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
   )
 }
